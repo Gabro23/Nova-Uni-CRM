@@ -1,64 +1,87 @@
-// script.js - VERSIONE PRODUZIONE (FIREBASE AUTH REALE + EMAILJS)
+// script.js - VERSIONE CORRETTA E PULITA
+
+console.log("Il file script.js è stato caricato!"); // Se non vedi questo in console, il file non è collegato.
 
 // --- 1. CONFIGURAZIONE FIREBASE ---
 const firebaseConfig = {
-  apiKey: "AIzaSyBGLgVz0HRkwYNLGfjbFKahitLZgi4xs5A",
-  authDomain: "crm---nova-uni.firebaseapp.com",
-  projectId: "crm---nova-uni",
-  storageBucket: "crm---nova-uni.firebasestorage.app",
-  messagingSenderId: "486298746752",
-  appId: "1:486298746752:web:bea5f8f2934ddef6bdcb65",
-  measurementId: "G-SRCYJ07HGN"
+	apiKey: "AIzaSyBGLgVz0HRkwYNLGfjbFKahitLZgi4xs5A",
+	authDomain: "crm---nova-uni.firebaseapp.com",
+	projectId: "crm---nova-uni",
+	storageBucket: "crm---nova-uni.firebasestorage.app",
+	messagingSenderId: "486298746752",
+	appId: "1:486298746752:web:bea5f8f2934ddef6bdcb65",
+	measurementId: "G-SRCYJ07HGN"
 };
 
 // Inizializza Firebase
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+	firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.firestore();
-const auth = firebase.auth(); // Aggiunto il servizio Auth
+const auth = firebase.auth(); 
 
-// --- 2. GESTIONE LOGIN (REALE CON EMAIL E PASSWORD) ---
+// --- 2. GESTIONE LOGIN ---
 
-// Questo "ascoltatore" controlla SEMPRE se c'è un utente loggato
-// Appena apri la pagina, Firebase controlla se eri già dentro.
+// Ascoltatore stato utente (Gestisce i refresh della pagina)
 auth.onAuthStateChanged((user) => {
 	if (user) {
-		// Utente loggato: nascondi login, mostra CRM
+		console.log("Utente già loggato:", user.email);
 		mostraCRM(user.email);
 	} else {
-		// Nessun utente: mostra form login
+		console.log("Nessun utente loggato.");
 		document.getElementById("loginSection").classList.remove("d-none");
 		document.getElementById("crmSection").classList.add("d-none");
 	}
 });
 
+// Funzione Login con Debug
 function effettuaLogin() {
-	const emailInput = document.getElementById("loginEmail").value.trim();
-	const passInput = document.getElementById("loginPassword").value.trim(); // Ora serve la password
+	console.log("Tentativo di login in corso..."); // Se non vedi questo, il bottone non è collegato
 	
-	if (!emailInput || !passInput) return alert("Inserisci email e password.");
+	const emailField = document.getElementById("loginEmail");
+	const passField = document.getElementById("loginPassword");
 
-	// Login vero su Firebase
-	auth.signInWithEmailAndPassword(emailInput, passInput)
+	if (!emailField || !passField) {
+		alert("Errore HTML: mancano gli ID loginEmail o loginPassword");
+		return;
+	}
+
+	const email = emailField.value.trim();
+	const pass = passField.value.trim();
+
+	if (!email || !pass) {
+		alert("Per favore, inserisci email e password.");
+		return;
+	}
+
+	auth.signInWithEmailAndPassword(email, pass)
 		.then((userCredential) => {
-			// Login riuscito! onAuthStateChanged gestirà la visualizzazione
-			console.log("Login effettuato:", userCredential.user.email);
+			console.log("Login riuscito:", userCredential.user.email);
+			// Non serve chiamare mostraCRM qui, ci pensa onAuthStateChanged
 		})
 		.catch((error) => {
 			console.error("Errore login:", error);
-			alert("Errore di accesso: " + error.message);
+			let msg = "Errore sconosciuto";
+			if(error.code === "auth/wrong-password") msg = "Password errata.";
+			if(error.code === "auth/user-not-found") msg = "Utente non trovato.";
+			if(error.code === "auth/invalid-email") msg = "Formato email non valido.";
+			alert("Errore Login: " + msg);
 		});
 }
 
 function mostraCRM(email) {
 	document.getElementById("loginSection").classList.add("d-none");
 	document.getElementById("crmSection").classList.remove("d-none");
-	console.log("Benvenuto nel CRM:", email);
+	
+	// Aggiorna un elemento visivo se vuoi mostrare chi è loggato
+	const headerTitle = document.querySelector(".crm-header h4");
+	if(headerTitle) headerTitle.innerText = "Operatore: " + email;
 }
 
 function logout() {
 	auth.signOut().then(() => {
 		console.log("Logout effettuato");
-		location.reload(); // Ricarica la pagina per pulire tutto
+		location.reload();
 	});
 }
 
@@ -116,65 +139,67 @@ function aggiornaCorsi() {
 
 
 // --- 4. SALVATAGGIO DATI E INVIO EMAIL ---
-document.getElementById("leadForm").addEventListener("submit", function(e) {
-	e.preventDefault();
-	
-	// Controlliamo se l'utente è loggato davvero
-	const user = auth.currentUser;
-	if (!user) {
-		alert("Sessione scaduta. Rifai il login.");
-		location.reload();
-		return;
-	}
+// Aggiungiamo un controllo se l'elemento esiste per evitare errori se siamo nella pagina sbagliata
+const formLead = document.getElementById("leadForm");
 
-	const btnSubmit = document.querySelector("button[type='submit']");
-	const operatoreEmail = user.email; // Prendiamo la mail vera da Firebase Auth
-
-	// Dati per Firebase
-	const nuovoStudente = {
-		nome: document.getElementById("nome").value,
-		cognome: document.getElementById("cognome").value,
-		telefono: document.getElementById("telefono").value,
-		email_studente: document.getElementById("email").value,
-		universita: document.getElementById("universita").value,
-		corso: document.getElementById("corso").value,
-		inserito_da: operatoreEmail,
-		data_inserimento: new Date(), 
-		stato: "Nuovo"
-	};
-
-	btnSubmit.innerText = "Salvataggio in corso...";
-	btnSubmit.disabled = true;
-
-	// A. SALVA SU FIREBASE
-	db.collection("studenti").add(nuovoStudente)
-	.then(() => {
-		console.log("Dati salvati su Firebase");
+if (formLead) {
+	formLead.addEventListener("submit", function(e) {
+		e.preventDefault();
 		
-		// B. INVIA LA NOTIFICA EMAIL (CORRETTO)
-		const parametriEmail = {
-			nome_studente: nuovoStudente.nome + " " + nuovoStudente.cognome, 
-			telefono_studente: nuovoStudente.telefono,
-			orientatore: operatoreEmail
+		const user = auth.currentUser;
+		if (!user) {
+			alert("Sessione scaduta. Rifai il login.");
+			location.reload();
+			return;
+		}
+
+		const btnSubmit = document.querySelector("button[type='submit']");
+		const operatoreEmail = user.email;
+
+		const nuovoStudente = {
+			nome: document.getElementById("nome").value,
+			cognome: document.getElementById("cognome").value,
+			telefono: document.getElementById("telefono").value,
+			email_studente: document.getElementById("email").value,
+			universita: document.getElementById("universita").value,
+			corso: document.getElementById("corso").value,
+			inserito_da: operatoreEmail,
+			data_inserimento: new Date(), 
+			stato: "Nuovo"
 		};
 
-		emailjs.send("service_pww5yfx", "template_anemtvg", parametriEmail)
-			.then(function() {
-				console.log('Email inviata con successo!');
-			}, function(error) {
-				console.log('Errore invio email:', error);
-			});
+		btnSubmit.innerText = "Salvataggio...";
+		btnSubmit.disabled = true;
 
-		// Messaggio finale e reset
-		alert("Studente inserito e notifica inviata!");
-		document.getElementById("leadForm").reset(); 
-		btnSubmit.innerText = "Inserisci nel CRM";
-		btnSubmit.disabled = false;
-	})
-	.catch((error) => {
-		console.error("Errore salvataggio:", error);
-		alert("Errore salvataggio: " + error.message);
-		btnSubmit.innerText = "Inserisci nel CRM";
-		btnSubmit.disabled = false;
+		// A. SALVA SU FIREBASE
+		db.collection("studenti").add(nuovoStudente)
+		.then(() => {
+			console.log("Dati salvati su Firebase");
+			
+			// B. INVIA LA NOTIFICA EMAIL
+			const parametriEmail = {
+				nome_studente: nuovoStudente.nome + " " + nuovoStudente.cognome, 
+				telefono_studente: nuovoStudente.telefono,
+				orientatore: operatoreEmail
+			};
+
+			emailjs.send("service_pww5yfx", "template_anemtvg", parametriEmail)
+				.then(function() {
+					console.log('Email inviata con successo!');
+				}, function(error) {
+					console.log('Errore invio email:', error);
+				});
+
+			alert("Studente inserito e notifica inviata!");
+			formLead.reset(); 
+			btnSubmit.innerText = "Inserisci nel CRM";
+			btnSubmit.disabled = false;
+		})
+		.catch((error) => {
+			console.error("Errore salvataggio:", error);
+			alert("Errore salvataggio: " + error.message);
+			btnSubmit.innerText = "Inserisci nel CRM";
+			btnSubmit.disabled = false;
+		});
 	});
-});
+}
