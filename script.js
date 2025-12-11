@@ -1,10 +1,10 @@
-// script.js - VERSIONE DEFINITIVA
+// script.js - VERSIONE DEFINITIVA E CORRETTA
 
 console.log("✅ Script caricato correttamente");
 
-// --- 1. CONFIGURAZIONE FIREBASE ---
+// --- 1. CONFIGURAZIONE FIREBASE (QUELA TUA CHE FUNZIONAVA) ---
 const firebaseConfig = {
-	apiKey: "AIzaSyBGLgVz0HRkwYNLGFjbFKahitLZgi4xssA",
+	apiKey: "AIzaSyDeg2oFFnP4A-OKW549migyuD2xUIG2ers", // <--- RIMESSA QUELLA GIUSTA TUA
 	authDomain: "crm---nova-uni.firebaseapp.com",
 	projectId: "crm---nova-uni",
 	storageBucket: "crm---nova-uni.firebasestorage.app",
@@ -26,13 +26,12 @@ try {
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// --- 2. CONFIGURAZIONE EMAILJS ---
-// Public Key 
+// --- 2. CONFIGURAZIONE EMAILJS (CORRETTA) ---
+// Public Key presa dal tuo screenshot
 emailjs.init("jeuHyjgd1RLFMZYI5"); 
 
 // --- GESTIONE AUTENTICAZIONE ---
 
-// Monitora lo stato dell'autenticazione
 auth.onAuthStateChanged((user) => {
 	if (user) {
 		console.log("✅ Utente autenticato:", user.email);
@@ -43,7 +42,6 @@ auth.onAuthStateChanged((user) => {
 	}
 });
 
-// Form Login con gestione evento
 const loginForm = document.getElementById("loginForm");
 if (loginForm) {
 	loginForm.addEventListener("submit", function(e) {
@@ -52,7 +50,6 @@ if (loginForm) {
 	});
 }
 
-// Funzione Login
 function effettuaLogin() {
 	console.log("🔐 Tentativo di login...");
 	
@@ -89,7 +86,7 @@ function effettuaLogin() {
 				case "auth/wrong-password": messaggio = "Password errata"; break;
 				case "auth/user-not-found": messaggio = "Utente non trovato"; break;
 				case "auth/invalid-email": messaggio = "Email non valida"; break;
-				case "auth/invalid-credential": messaggio = "Credenziali errate"; break; // Errore comune ultimamente
+				case "auth/invalid-credential": messaggio = "Credenziali errate"; break;
 				default: messaggio = error.message;
 			}
 			mostraErrore(messaggio);
@@ -186,61 +183,3 @@ function salvaStudente() {
 	const nuovoStudente = {
 		nome: document.getElementById("nome").value.trim(),
 		cognome: document.getElementById("cognome").value.trim(),
-		telefono: document.getElementById("telefono").value.trim(),
-		email_studente: document.getElementById("email").value.trim() || "Non fornita",
-		universita: document.getElementById("universita").value || "Non specificata",
-		corso: document.getElementById("corso").value || "Non specificato",
-		inserito_da: user.email,
-		data_inserimento: firebase.firestore.FieldValue.serverTimestamp(),
-		stato: "Nuovo"
-	};
-
-	if (!nuovoStudente.nome || !nuovoStudente.cognome || !nuovoStudente.telefono) {
-		alert("Compila tutti i campi obbligatori!");
-		return;
-	}
-
-	btnText.textContent = "Salvataggio...";
-	spinner.classList.remove("d-none");
-	submitBtn.disabled = true;
-
-	// Salva su Firebase
-	db.collection("studenti").add(nuovoStudente)
-		.then((docRef) => {
-			console.log("✅ Studente salvato nel DB:", docRef.id);
-			
-			// Preparazione parametri EmailJS
-			const parametriEmail = {
-				nome_studente: `${nuovoStudente.nome} ${nuovoStudente.cognome}`,
-				telefono_studente: nuovoStudente.telefono,
-				orientatore: user.email,
-				universita: nuovoStudente.universita,
-				corso: nuovoStudente.corso
-			};
-
-			// INVIO EMAIL
-			// Service ID 
-			// Template ID
-			return emailjs.send("service_pww5yfx", "template_anemtvg", parametriEmail);
-		})
-		.then(() => {
-			console.log("✅ Email inviata");
-			alert("✅ Studente inserito e notifica inviata!");
-			leadForm.reset();
-			document.getElementById("corso").disabled = true;
-		})
-		.catch((error) => {
-			console.error("❌ Errore:", error);
-			// Se l'errore è solo dell'email ma il salvataggio è ok, avvisiamo l'utente
-			if (error.text && error.text.includes("template")) {
-				alert("✅ Studente salvato, ma errore nell'invio email (Controlla il Template ID).");
-			} else {
-				alert("⚠️ Errore: " + JSON.stringify(error));
-			}
-		})
-		.finally(() => {
-			btnText.textContent = "Inserisci nel CRM";
-			spinner.classList.add("d-none");
-			submitBtn.disabled = false;
-		});
-}
