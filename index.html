@@ -5,31 +5,82 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>CRM Nova Uni - Orientamento</title>
 	
+	<link rel="icon" type="image/jpeg" href="Logo-piccolino.jpg">
+	
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 	
-	<!-- Firebase SDK -->
 	<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 	
-	<!-- EmailJS -->
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 	
 	<style>
-		body { 
-			background-color: #f4f6f9; 
-			font-family: sans-serif; 
+		body {
+			background-color: #f4f6f9;
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 		}
-		.login-container { 
-			max-width: 400px; 
-			margin-top: 100px; 
+		
+		/* --- STILE LOGIN --- */
+		.login-container {
+			max-width: 400px;
+			margin-top: 100px;
 		}
-		.crm-header { 
-			background-color: #0d1b2a; 
-			color: white; 
-			padding: 15px; 
+		
+		/* --- STILE HEADER CRM --- */
+		.crm-header {
+			background-color: #0d1b2a;
+			color: white;
+			/* AUMENTATO IL PADDING QUI SOTTO PER INGRANDIRE L'HEADER */
+			padding: 25px 30px; 
+			box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 		}
+
+		/* Contenitore Logo + Testi */
+		.brand-wrapper {
+			display: flex;
+			align-items: center;
+			gap: 20px; /* Spazio leggermente aumentato tra logo e testo */
+		}
+
+		/* Immagine del logo nell'header */
+		.header-logo-img {
+			/* AUMENTATA ALTEZZA LOGO */
+			height: 80px; 
+			width: auto;
+			border-radius: 8px;
+			background-color: white;
+			padding: 4px; /* Un po' più di bordo bianco */
+		}
+
+		/* Gruppo dei testi nell'header */
+		.header-text-group {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+		}
+
+		.header-main-title {
+			/* AUMENTATO FONT TITOLO */
+			font-size: 1.6rem; 
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+			margin: 0;
+			line-height: 1.1;
+		}
+
+		.header-subtitle {
+			/* AUMENTATO FONT SOTTOTITOLO */
+			font-size: 1.1rem; 
+			font-weight: 300;
+			font-style: italic;
+			color: #e0e0e0;
+			margin-top: 2px;
+		}
+
+		/* --- ALTRI STILI --- */
 		.alert-custom {
 			position: fixed;
 			top: 20px;
@@ -37,15 +88,26 @@
 			z-index: 9999;
 			min-width: 300px;
 		}
+		
+		.btn-logout {
+			border: 1px solid rgba(255,255,255,0.3);
+			color: white;
+			transition: all 0.3s;
+			font-size: 1rem; /* Leggermente più grande anche il tasto esci */
+		}
+		.btn-logout:hover {
+			background-color: rgba(255,255,255,0.1);
+			border-color: white;
+			color: white;
+		}
 	</style>
 </head>
 <body>
 
-	<!-- SEZIONE LOGIN -->
 	<div id="loginSection" class="container login-container">
-		<div class="card p-4 shadow-sm">
+		<div class="card p-4 shadow-sm border-0">
 			<div class="text-center mb-4">
-				<h3>🎓 Nova Uni CRM</h3>
+				<h3 class="fw-bold text-primary">🎓 Nova Uni CRM</h3>
 				<p class="text-muted">Accesso Operatori</p>
 			</div>
 			
@@ -60,7 +122,7 @@
 					<input type="password" id="loginPassword" class="form-control" placeholder="Password" required>
 				</div>
 				
-				<button type="submit" class="btn btn-primary w-100">
+				<button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
 					<span id="loginButtonText">Entra</span>
 					<span id="loginSpinner" class="spinner-border spinner-border-sm d-none ms-2"></span>
 				</button>
@@ -70,66 +132,78 @@
 		</div>
 	</div>
 
-	<!-- SEZIONE CRM -->
 	<div id="crmSection" class="d-none">
-		<nav class="crm-header d-flex justify-content-between align-items-center mb-4">
-			<h4 class="m-0">Nova Uni - Inserimento</h4>
-			<div>
-				<span id="operatoreName" class="me-3"></span>
-				<button onclick="logout()" class="btn btn-outline-light btn-sm">Esci</button>
+		<nav class="crm-header d-flex justify-content-between align-items-center mb-5">
+			
+			<div class="brand-wrapper">
+				<img src="Logo.jpg" alt="Logo Nova Uni" class="header-logo-img">
+				
+				<div class="header-text-group">
+					<span class="header-main-title">Nova Uni</span>
+					<span class="header-subtitle">Polo di Orientamento di Laura Baldari</span>
+				</div>
+			</div>
+
+			<div class="d-flex align-items-center">
+				<span id="operatoreName" class="me-4 fw-bold d-none d-md-block fs-5"></span> <button onclick="logout()" class="btn btn-logout px-3 py-2">
+					<i class="fas fa-sign-out-alt me-1"></i> Esci
+				</button>
 			</div>
 		</nav>
 		
 		<div class="container">
 			<div class="row justify-content-center">
 				<div class="col-md-8">
-					<div class="card p-4 shadow-sm">
-						<h5 class="mb-4"><i class="fas fa-user-plus"></i> Nuovo Studente</h5>
+					<div class="card p-4 shadow border-0">
+						<div class="d-flex align-items-center mb-4 border-bottom pb-3">
+							<i class="fas fa-user-plus fa-2x text-primary me-3"></i>
+							<h4 class="m-0">Nuovo Studente</h4>
+						</div>
 						
 						<form id="leadForm">
 							<div class="row">
 								<div class="col-md-6 mb-3">
-									<label>Nome <span class="text-danger">*</span></label>
+									<label class="fw-bold small text-muted">Nome <span class="text-danger">*</span></label>
 									<input type="text" id="nome" class="form-control" required>
 								</div>
 								<div class="col-md-6 mb-3">
-									<label>Cognome <span class="text-danger">*</span></label>
+									<label class="fw-bold small text-muted">Cognome <span class="text-danger">*</span></label>
 									<input type="text" id="cognome" class="form-control" required>
 								</div>
 							</div>
 							
 							<div class="row">
 								<div class="col-md-6 mb-3">
-									<label>Telefono <span class="text-danger">*</span></label>
+									<label class="fw-bold small text-muted">Telefono <span class="text-danger">*</span></label>
 									<input type="tel" id="telefono" class="form-control" placeholder="+39 xxx xxx xxxx" required>
 								</div>
 								<div class="col-md-6 mb-3">
-									<label>Email Studente</label>
+									<label class="fw-bold small text-muted">Email Studente</label>
 									<input type="email" id="email" class="form-control" placeholder="Facoltativo">
 								</div>
 							</div>
 							
-							<hr>
-							
-							<div class="mb-3">
-								<label>Università</label>
-								<select id="universita" class="form-select" onchange="aggiornaCorsi()">
-									<option value="">Seleziona Ateneo...</option>
-									<option value="Pegaso">Pegaso</option>
-									<option value="Mercatorum">Mercatorum</option>
-									<option value="SanRaffaele">San Raffaele</option>
-								</select>
+							<div class="p-3 bg-light rounded mb-4 mt-2">
+								<div class="mb-3">
+									<label class="fw-bold small text-muted">Università</label>
+									<select id="universita" class="form-select" onchange="aggiornaCorsi()">
+										<option value="">Seleziona Ateneo...</option>
+										<option value="Pegaso">Pegaso</option>
+										<option value="Mercatorum">Mercatorum</option>
+										<option value="SanRaffaele">San Raffaele</option>
+									</select>
+								</div>
+								
+								<div class="mb-0">
+									<label class="fw-bold small text-muted">Corso di Laurea</label>
+									<select id="corso" class="form-select" disabled>
+										<option value="">Prima seleziona un Ateneo</option>
+									</select>
+								</div>
 							</div>
 							
-							<div class="mb-4">
-								<label>Corso di Laurea</label>
-								<select id="corso" class="form-select" disabled>
-									<option value="">Prima seleziona un Ateneo</option>
-								</select>
-							</div>
-							
-							<button type="submit" class="btn btn-success w-100 py-2">
-								<span id="submitButtonText">Inserisci nel CRM</span>
+							<button type="submit" class="btn btn-success w-100 py-3 fw-bold text-uppercase shadow-sm">
+								<span id="submitButtonText"><i class="fas fa-save me-2"></i> Inserisci nel CRM</span>
 								<span id="submitSpinner" class="spinner-border spinner-border-sm d-none ms-2"></span>
 							</button>
 						</form>
