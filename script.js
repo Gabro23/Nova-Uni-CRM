@@ -1,4 +1,4 @@
-// script.js - VERSIONE CORRETTA CON DEBUG AVANZATO
+// script.js - VERSIONE AGGIORNATA PER EMAIL COMPLETA
 
 console.log("✅ Script caricato correttamente");
 
@@ -26,9 +26,8 @@ try {
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// ⚠️ IMPORTANTE: INSERISCI QUI LA TUA PUBLIC KEY DI EMAILJS
-// Vai su https://dashboard.emailjs.com/admin/account
-emailjs.init("jeuHyjgd1RLFMZYI5"); // <-- CAMBIA QUESTO!
+// ⚠️ IMPORTANTE: PUBLIC KEY EMAILJS
+emailjs.init("jeuHyjgd1RLFMZYI5"); 
 
 // --- GESTIONE AUTENTICAZIONE ---
 
@@ -52,7 +51,7 @@ if (loginForm) {
 	});
 }
 
-// Funzione Login Migliorata
+// Funzione Login
 function effettuaLogin() {
 	console.log("🔐 Tentativo di login...");
 	
@@ -95,39 +94,20 @@ function effettuaLogin() {
 	auth.signInWithEmailAndPassword(email, pass)
 		.then((userCredential) => {
 			console.log("✅ Login riuscito:", userCredential.user.email);
-			// onAuthStateChanged gestirà il redirect
 		})
 		.catch((error) => {
 			console.error("❌ Errore login:", error);
-			console.error("Codice errore:", error.code);
-			console.error("Messaggio:", error.message);
 			
 			let messaggio = "Errore sconosciuto";
-			
 			switch(error.code) {
-				case "auth/wrong-password":
-					messaggio = "Password errata";
-					break;
-				case "auth/user-not-found":
-					messaggio = "Utente non trovato. Verifica l'email.";
-					break;
-				case "auth/invalid-email":
-					messaggio = "Formato email non valido";
-					break;
-				case "auth/user-disabled":
-					messaggio = "Account disabilitato. Contatta l'amministratore.";
-					break;
-				case "auth/too-many-requests":
-					messaggio = "Troppi tentativi falliti. Riprova più tardi.";
-					break;
-				case "auth/network-request-failed":
-					messaggio = "Errore di connessione. Verifica internet.";
-					break;
-				case "auth/invalid-credential":
-					messaggio = "Credenziali non valide. Verifica email e password.";
-					break;
-				default:
-					messaggio = `Errore: ${error.message}`;
+				case "auth/wrong-password": messaggio = "Password errata"; break;
+				case "auth/user-not-found": messaggio = "Utente non trovato."; break;
+				case "auth/invalid-email": messaggio = "Formato email non valido"; break;
+				case "auth/user-disabled": messaggio = "Account disabilitato."; break;
+				case "auth/too-many-requests": messaggio = "Troppi tentativi. Riprova più tardi."; break;
+				case "auth/network-request-failed": messaggio = "Errore di connessione."; break;
+				case "auth/invalid-credential": messaggio = "Credenziali non valide."; break;
+				default: messaggio = `Errore: ${error.message}`;
 			}
 			
 			mostraErrore(messaggio);
@@ -181,35 +161,35 @@ function logout() {
 // --- DATABASE CORSI ---
 const databaseCorsi = {
 	"Pegaso": [
-		"L-5 Filosofia ed Etica", "L-7 Ingegneria Civile", "L-10 Lettere, Arti e Umanesimo", 
-		"L-15 Scienze Turistiche", "L-18 Economia Aziendale", "L-19 Scienze dell'Educazione e della Formazione", 
-		"L-22 Scienze Motorie", "L-31 Informatica", "LMG-01 Giurisprudenza", 
-		"LM-14 Filologia Moderna e Comparata", "LM-26 Ingegneria della Sicurezza", "LM-39 Linguistica Moderna", 
-		"LM-47 Management dello Sport e delle Attività Motorie", "LM-56 Economia, Digital Data Analysis", 
+		"L-5 Filosofia ed Etica", "L-7 Ingegneria Civile", "L-10 Lettere, Arti e Umanesimo", 
+		"L-15 Scienze Turistiche", "L-18 Economia Aziendale", "L-19 Scienze dell'Educazione e della Formazione", 
+		"L-22 Scienze Motorie", "L-31 Informatica", "LMG-01 Giurisprudenza", 
+		"LM-14 Filologia Moderna e Comparata", "LM-26 Ingegneria della Sicurezza", "LM-39 Linguistica Moderna", 
+		"LM-47 Management dello Sport e delle Attività Motorie", "LM-56 Economia, Digital Data Analysis", 
 		"LM-85 Scienze Pedagogiche"
 	],
 	"Mercatorum": [
-		"L-3 Scienze e Tecnologie delle Arti", "L-4 Design del Prodotto e della Moda", 
-		"L-7 Ingegneria delle Infrastrutture", "L-8 Ingegneria Informatica", "L-9 Ingegneria Gestionale", 
-		"L-12 Lingue e Mercati", "L-14 Scienze Giuridiche", "L-18 Gestione d'Impresa", 
-		"L-20 Comunicazione e Multimedialità", "L-24 Scienze e Tecniche Psicologiche", 
-		"L-36 Scienze Politiche", "L-40 Sociologia e Innovazione", "L-41 Statistica e Big Data", 
-		"L-GASTR Gastronomia", "LM-31 Ingegneria Gestionale", "LM-38 Lingue per la Comunicazione", 
-		"LM-51 Psicologia del Lavoro", "LM-52 Relazioni Internazionali", "LM-59 Comunicazione Digitale", 
+		"L-3 Scienze e Tecnologie delle Arti", "L-4 Design del Prodotto e della Moda", 
+		"L-7 Ingegneria delle Infrastrutture", "L-8 Ingegneria Informatica", "L-9 Ingegneria Gestionale", 
+		"L-12 Lingue e Mercati", "L-14 Scienze Giuridiche", "L-18 Gestione d'Impresa", 
+		"L-20 Comunicazione e Multimedialità", "L-24 Scienze e Tecniche Psicologiche", 
+		"L-36 Scienze Politiche", "L-40 Sociologia e Innovazione", "L-41 Statistica e Big Data", 
+		"L-GASTR Gastronomia", "LM-31 Ingegneria Gestionale", "LM-38 Lingue per la Comunicazione", 
+		"LM-51 Psicologia del Lavoro", "LM-52 Relazioni Internazionali", "LM-59 Comunicazione Digitale", 
 		"LM-66 Sicurezza Informatica", "LM-77 Management"
 	],
 	"SanRaffaele": [
-		"L-1 Patrimonio Culturale in Era Digitale", "L-4 Moda e Design Industriale", 
-		"L-8 Ingegneria Informatica e AI", "L-9 Ingegneria Biomedica", "L-11 Lingue e Culture Straniere", 
-		"L-13 Scienze Biologiche", "L-16 Scienze dell'Amministrazione", "L-22 Scienze Motorie", 
-		"L-26 Scienze dell'Alimentazione", "LM-32 Ingegneria Informatica e AI", 
-		"LM-37 Lingue e culture straniere", "LM-61 Scienze della Nutrizione Umana", 
-		"LM-63 Management e PA", "LM-67 Scienze e Tecniche Attività Motorie", 
+		"L-1 Patrimonio Culturale in Era Digitale", "L-4 Moda e Design Industriale", 
+		"L-8 Ingegneria Informatica e AI", "L-9 Ingegneria Biomedica", "L-11 Lingue e Culture Straniere", 
+		"L-13 Scienze Biologiche", "L-16 Scienze dell'Amministrazione", "L-22 Scienze Motorie", 
+		"L-26 Scienze dell'Alimentazione", "LM-32 Ingegneria Informatica e AI", 
+		"LM-37 Lingue e culture straniere", "LM-61 Scienze della Nutrizione Umana", 
+		"LM-63 Management e PA", "LM-67 Scienze e Tecniche Attività Motorie", 
 		"LM-77 Management e Consulenza"
 	]
 };
 
-// Aggiorna corsi in base all'università
+// Aggiorna corsi
 function aggiornaCorsi() {
 	const uniSelect = document.getElementById("universita");
 	const corsoSelect = document.getElementById("corso");
@@ -255,6 +235,7 @@ function salvaStudente() {
 	const submitBtn = leadForm.querySelector("button[type='submit']");
 
 	// Raccogli dati
+	// NOTA: Qui gestiamo già i valori vuoti con "Non fornita" o "Non specificato"
 	const nuovoStudente = {
 		nome: document.getElementById("nome").value.trim(),
 		cognome: document.getElementById("cognome").value.trim(),
@@ -283,13 +264,15 @@ function salvaStudente() {
 		.then((docRef) => {
 			console.log("✅ Studente salvato con ID:", docRef.id);
 			
-			// Invia email notifica
+			// Invia email notifica - AGGIORNATA
+			// Ora invia anche email studente e corso interesse
 			const parametriEmail = {
 				nome_studente: `${nuovoStudente.nome} ${nuovoStudente.cognome}`,
 				telefono_studente: nuovoStudente.telefono,
+				email_studente: nuovoStudente.email_studente, // <--- NUOVO CAMPO
 				orientatore: user.email,
 				universita: nuovoStudente.universita,
-				corso: nuovoStudente.corso
+				corso_interesse: nuovoStudente.corso // <--- NUOVO CAMPO
 			};
 
 			return emailjs.send("service_pww5yfx", "template_anemtvg", parametriEmail);
