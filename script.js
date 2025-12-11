@@ -1,4 +1,4 @@
-// script.js - VERSIONE AGGIORNATA PER EMAIL COMPLETA
+// script.js 
 
 console.log("✅ Script caricato correttamente");
 
@@ -26,7 +26,7 @@ try {
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// ⚠️ IMPORTANTE: PUBLIC KEY EMAILJS
+// EMAILJS
 emailjs.init("jeuHyjgd1RLFMZYI5"); 
 
 // --- GESTIONE AUTENTICAZIONE ---
