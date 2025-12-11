@@ -1,4 +1,4 @@
-// script.js - VERSIONE TEST (LOGIN SBLOCCATO + EMAIL FUNZIONANTE)
+// script.js - VERSIONE DEFINITIVA (LOGIN SILENZIOSO + EMAIL CORRETTA)
 
 // --- 1. CONFIGURAZIONE FIREBASE ---
 const firebaseConfig = {
@@ -15,7 +15,8 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// --- 2. GESTIONE LOGIN (MODALITÀ TEST - ENTRA CHIUNQUE) ---
+
+// --- 2. GESTIONE LOGIN ---
 
 document.addEventListener("DOMContentLoaded", () => {
 	const operatore = localStorage.getItem("novaUser");
@@ -26,14 +27,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 });
 
-// QUESTA È LA FUNZIONE MODIFICATA PER FARTI ENTRARE SUBITO
 function effettuaLogin() {
 	const emailInput = document.getElementById("loginEmail").value.trim().toLowerCase();
 	
-	if (!emailInput) return alert("Inserisci una email.");
+	if (!emailInput) return alert("Inserisci una email per entrare.");
 
-	
+	// Salva l'utente
 	localStorage.setItem("novaUser", emailInput);
+	
+	// NIENTE PIÙ ALERT QUI. Entra diretto.
 	mostraCRM(emailInput);
 }
 
@@ -108,6 +110,7 @@ document.getElementById("leadForm").addEventListener("submit", function(e) {
 	const btnSubmit = document.querySelector("button[type='submit']");
 	const operatore = localStorage.getItem("novaUser"); 
 
+	// Dati per Firebase (qui usiamo i nomi "standard" del database)
 	const nuovoStudente = {
 		nome: document.getElementById("nome").value,
 		cognome: document.getElementById("cognome").value,
@@ -128,17 +131,14 @@ document.getElementById("leadForm").addEventListener("submit", function(e) {
 	.then(() => {
 		console.log("Dati salvati su Firebase");
 		
-		// B. INVIA LA NOTIFICA EMAIL
+		// B. INVIA LA NOTIFICA EMAIL (CORRETTO PER IL TUO TEMPLATE)
+		// Le chiavi a sinistra (nome_studente, ecc) DEVONO essere identiche a quelle su EmailJS
 		const parametriEmail = {
-			nome: nuovoStudente.nome,
-			cognome: nuovoStudente.cognome,
-			telefono: nuovoStudente.telefono,
-			universita: nuovoStudente.universita,
-			corso: nuovoStudente.corso,
-			operatore: operatore
+			nome_studente: nuovoStudente.nome + " " + nuovoStudente.cognome, // Unisco nome e cognome
+			telefono_studente: nuovoStudente.telefono,
+			orientatore: operatore
 		};
 
-		// QUI HO MESSO I TUOI CODICI PRESI DAGLI SCREENSHOT
 		emailjs.send("service_pww5yfx", "template_anemtvg", parametriEmail)
 			.then(function() {
 				console.log('Email inviata con successo!');
@@ -146,14 +146,17 @@ document.getElementById("leadForm").addEventListener("submit", function(e) {
 				console.log('Errore invio email:', error);
 			});
 
-		alert("Studente inserito correttamente nel CRM! Email inviata.");
+		// Messaggio finale all'utente
+		alert("Studente inserito correttamente nel CRM! Email di notifica inviata.");
+		
+		// Pulisce il form
 		document.getElementById("leadForm").reset(); 
 		btnSubmit.innerText = "Inserisci nel CRM";
 		btnSubmit.disabled = false;
 	})
 	.catch((error) => {
 		console.error("Errore salvataggio:", error);
-		alert("C'è stato un problema nel salvataggio.");
+		alert("C'è stato un problema nel salvataggio su Firebase.");
 		btnSubmit.innerText = "Inserisci nel CRM";
 		btnSubmit.disabled = false;
 	});
