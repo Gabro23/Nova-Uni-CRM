@@ -7,56 +7,79 @@
 	
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
+	
+	<!-- Firebase SDK -->
 	<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
+	
+	<!-- EmailJS -->
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-	<script type="text/javascript">
-	   (function(){
-		  // ⚠️ RIMETTI QUI LA TUA PUBLIC KEY DI EMAILJS SE NECESSARIO
-		  emailjs.init("LA_TUA_PUBLIC_KEY_QUI"); 
-	   })();
-	</script>
-
+	
 	<style>
-		body { background-color: #f4f6f9; font-family: sans-serif; }
-		.login-container { max-width: 400px; margin-top: 100px; }
-		.crm-header { background-color: #0d1b2a; color: white; padding: 15px; }
+		body { 
+			background-color: #f4f6f9; 
+			font-family: sans-serif; 
+		}
+		.login-container { 
+			max-width: 400px; 
+			margin-top: 100px; 
+		}
+		.crm-header { 
+			background-color: #0d1b2a; 
+			color: white; 
+			padding: 15px; 
+		}
+		.alert-custom {
+			position: fixed;
+			top: 20px;
+			right: 20px;
+			z-index: 9999;
+			min-width: 300px;
+		}
 	</style>
 </head>
 <body>
 
+	<!-- SEZIONE LOGIN -->
 	<div id="loginSection" class="container login-container">
 		<div class="card p-4 shadow-sm">
 			<div class="text-center mb-4">
-				<h3>Nova Uni CRM</h3>
+				<h3>🎓 Nova Uni CRM</h3>
 				<p class="text-muted">Accesso Operatori</p>
 			</div>
 			
-			<div class="mb-3">
-				<label class="form-label">Email</label>
-				<input type="email" id="loginEmail" class="form-control" placeholder="email@esempio.it">
-			</div>
+			<form id="loginForm">
+				<div class="mb-3">
+					<label class="form-label">Email</label>
+					<input type="email" id="loginEmail" class="form-control" placeholder="email@esempio.it" required>
+				</div>
+				
+				<div class="mb-3">
+					<label class="form-label">Password</label>
+					<input type="password" id="loginPassword" class="form-control" placeholder="Password" required>
+				</div>
+				
+				<button type="submit" class="btn btn-primary w-100">
+					<span id="loginButtonText">Entra</span>
+					<span id="loginSpinner" class="spinner-border spinner-border-sm d-none ms-2"></span>
+				</button>
+			</form>
 			
-			<div class="mb-3">
-				<label class="form-label">Password</label>
-				<input type="password" id="loginPassword" class="form-control" placeholder="Password">
-			</div>
-
-			<button onclick="effettuaLogin()" class="btn btn-primary w-100">Entra</button>
+			<div id="loginError" class="alert alert-danger mt-3 d-none"></div>
 		</div>
 	</div>
 
-
+	<!-- SEZIONE CRM -->
 	<div id="crmSection" class="d-none">
-		
 		<nav class="crm-header d-flex justify-content-between align-items-center mb-4">
 			<h4 class="m-0">Nova Uni - Inserimento</h4>
-			<button onclick="logout()" class="btn btn-outline-light btn-sm">Esci</button>
+			<div>
+				<span id="operatoreName" class="me-3"></span>
+				<button onclick="logout()" class="btn btn-outline-light btn-sm">Esci</button>
+			</div>
 		</nav>
-
+		
 		<div class="container">
 			<div class="row justify-content-center">
 				<div class="col-md-8">
@@ -66,50 +89,50 @@
 						<form id="leadForm">
 							<div class="row">
 								<div class="col-md-6 mb-3">
-									<label>Nome</label>
+									<label>Nome <span class="text-danger">*</span></label>
 									<input type="text" id="nome" class="form-control" required>
 								</div>
 								<div class="col-md-6 mb-3">
-									<label>Cognome</label>
+									<label>Cognome <span class="text-danger">*</span></label>
 									<input type="text" id="cognome" class="form-control" required>
 								</div>
 							</div>
-
+							
 							<div class="row">
 								<div class="col-md-6 mb-3">
-									<label>Telefono</label>
-									<input type="tel" id="telefono" class="form-control" required>
+									<label>Telefono <span class="text-danger">*</span></label>
+									<input type="tel" id="telefono" class="form-control" placeholder="+39 xxx xxx xxxx" required>
 								</div>
 								<div class="col-md-6 mb-3">
 									<label>Email Studente</label>
-									<input type="email" id="email" class="form-control" required>
+									<input type="email" id="email" class="form-control" placeholder="Facoltativo">
 								</div>
 							</div>
-
+							
 							<hr>
-
+							
 							<div class="mb-3">
 								<label>Università</label>
-								<select id="universita" class="form-select" onchange="aggiornaCorsi()" required>
+								<select id="universita" class="form-select" onchange="aggiornaCorsi()">
 									<option value="">Seleziona Ateneo...</option>
 									<option value="Pegaso">Pegaso</option>
 									<option value="Mercatorum">Mercatorum</option>
 									<option value="SanRaffaele">San Raffaele</option>
 								</select>
 							</div>
-
+							
 							<div class="mb-4">
 								<label>Corso di Laurea</label>
-								<select id="corso" class="form-select" disabled required>
+								<select id="corso" class="form-select" disabled>
 									<option value="">Prima seleziona un Ateneo</option>
 								</select>
 							</div>
-
+							
 							<button type="submit" class="btn btn-success w-100 py-2">
-								Inserisci nel CRM
+								<span id="submitButtonText">Inserisci nel CRM</span>
+								<span id="submitSpinner" class="spinner-border spinner-border-sm d-none ms-2"></span>
 							</button>
 						</form>
-
 					</div>
 				</div>
 			</div>
