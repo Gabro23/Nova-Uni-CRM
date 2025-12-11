@@ -4,7 +4,7 @@ console.log("✅ Script caricato correttamente");
 
 // --- CONFIGURAZIONE FIREBASE ---
 const firebaseConfig = {
-	apiKey: "AIzaSyBGLgVz0HRkwYNLGfjbFKahitLZgi4xs5A",
+	apiKey: "AIzaSyBGLgVz0HRkwYNLGFjbFKahitLZgi4xssA",
 	authDomain: "crm---nova-uni.firebaseapp.com",
 	projectId: "crm---nova-uni",
 	storageBucket: "crm---nova-uni.firebasestorage.app",
