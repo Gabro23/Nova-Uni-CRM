@@ -5,62 +5,28 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Nova Uni - Polo di Orientamento</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-	<style>
-		body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-		
-		/* Header Istituzionale */
-		.crm-header { 
-			background-color: #0d2e66; 
-			color: white; 
-			padding: 40px 0; 
-			margin-bottom: 30px; 
-			box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-		}
-		
-		/* Stile del Logo */
-		.logo-img {
-			max-height: 160px;
-			width: auto;
-			margin-bottom: 15px;
-			border-radius: 8px; 
-			background-color: white; 
-			padding: 8px; 
-		}
-
-		.card { border: none; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-		
-		.btn-primary { 
-			background-color: #0d2e66; 
-			border-color: #0d2e66; 
-			padding: 12px; 
-			font-size: 1.1rem; 
-			font-weight: 600; 
-		}
-		.btn-primary:hover { background-color: #1a4da1; }
-		
-		.form-label { font-weight: 600; color: #444; margin-top: 10px; }
-		.asterisk { color: #d9534f; }
-		
-		.footer-text { font-size: 0.8rem; color: #999; text-align: center; margin-top: 30px; margin-bottom: 20px;}
-	</style>
+	
+	<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 	<div class="crm-header text-center">
 		<img src="Logo.jpg" alt="Logo Nova Uni" class="logo-img">
-		
 		<p class="mb-0 fs-4">Polo di Orientamento di Laura Baldari</p>
 	</div>
 
 	<div class="container">
-		<div class="row justify-content-center">
+		
+		<div id="loginSection" class="row justify-content-center d-none">
+			 </div>
+
+		<div id="crmSection" class="row justify-content-center">
 			<div class="col-md-8 col-lg-6">
 				
 				<div class="card p-4">
 					<h4 class="text-center mb-4" style="color: #0d2e66;">Nuova Scheda Studente</h4>
 					
 					<form id="leadForm">
-						
 						<div class="row mb-2">
 							<div class="col-md-6">
 								<label for="nome" class="form-label">Nome <span class="asterisk">*</span></label>
@@ -78,7 +44,6 @@
 						</div>
 
 						<hr class="text-muted">
-
 						<p class="text-muted small mb-0">Dati Facoltativi</p>
 
 						<div class="mb-2">
@@ -110,67 +75,16 @@
 				</div>
 
 				<div class="footer-text">
-					&copy; 2025 Nova Uni CRM - Accesso Riservato
+					&copy; 2024 Nova Uni CRM - Accesso Riservato
 				</div>
 
 			</div>
 		</div>
 	</div>
 
-	<script>
-		const databaseCorsi = {
-			"Pegaso": [
-				"L-5 Filosofia ed Etica", "L-7 Ingegneria Civile", "L-10 Lettere, Arti e Umanesimo", 
-				"L-15 Scienze Turistiche", "L-18 Economia Aziendale", "L-19 Scienze dell'Educazione e della Formazione", 
-				"L-22 Scienze Motorie", "L-31 Informatica", "LMG-01 Giurisprudenza", 
-				"LM-14 Filologia Moderna e Comparata", "LM-26 Ingegneria della Sicurezza", "LM-39 Linguistica Moderna", 
-				"LM-47 Management dello Sport e delle Attività Motorie", "LM-56 Economia, Digital Data Analysis", 
-				"LM-85 Scienze Pedagogiche"
-			],
-			"Mercatorum": [
-				"L-3 Scienze e Tecnologie delle Arti", "L-4 Design del Prodotto e della Moda", 
-				"L-7 Ingegneria delle Infrastrutture", "L-8 Ingegneria Informatica", "L-9 Ingegneria Gestionale", 
-				"L-12 Lingue e Mercati", "L-14 Scienze Giuridiche", "L-18 Gestione d'Impresa", 
-				"L-20 Comunicazione e Multimedialità", "L-24 Scienze e Tecniche Psicologiche", 
-				"L-36 Scienze Politiche", "L-40 Sociologia e Innovazione", "L-41 Statistica e Big Data", 
-				"L-GASTR Gastronomia", "LM-31 Ingegneria Gestionale", "LM-38 Lingue per la Comunicazione", 
-				"LM-51 Psicologia del Lavoro", "LM-52 Relazioni Internazionali", "LM-59 Comunicazione Digitale", 
-				"LM-66 Sicurezza Informatica", "LM-77 Management"
-			],
-			"SanRaffaele": [
-				"L-1 Patrimonio Culturale in Era Digitale", "L-4 Moda e Design Industriale", 
-				"L-8 Ingegneria Informatica e AI", "L-9 Ingegneria Biomedica", "L-11 Lingue e Culture Straniere", 
-				"L-13 Scienze Biologiche", "L-16 Scienze dell'Amministrazione", "L-22 Scienze Motorie", 
-				"L-26 Scienze dell'Alimentazione", "LM-32 Ingegneria Informatica e AI", 
-				"LM-37 Lingue e culture straniere", "LM-61 Scienze della Nutrizione Umana", 
-				"LM-63 Management e PA", "LM-67 Scienze e Tecniche Attività Motorie", 
-				"LM-77 Management e Consulenza"
-			]
-		};
+	<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-		function aggiornaCorsi() {
-			const uniSelect = document.getElementById("universita");
-			const corsoSelect = document.getElementById("corso");
-			const ateneoScelto = uniSelect.value;
-			corsoSelect.innerHTML = '<option value="">Seleziona il Corso...</option>';
-			if (ateneoScelto && databaseCorsi[ateneoScelto]) {
-				corsoSelect.disabled = false;
-				databaseCorsi[ateneoScelto].forEach(corso => {
-					let option = document.createElement("option");
-					option.text = corso;
-					option.value = corso;
-					corsoSelect.add(option);
-				});
-			} else {
-				corsoSelect.disabled = true;
-				corsoSelect.innerHTML = '<option value="">Prima seleziona un Ateneo</option>';
-			}
-		}
-
-		document.getElementById("leadForm").addEventListener("submit", function(e) {
-			e.preventDefault();
-			alert("Front-end completato! Possiamo caricare su GitHub e poi collegare Firebase.");
-		});
-	</script>
+	<script src="script.js"></script>
 </body>
 </html>

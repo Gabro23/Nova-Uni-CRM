@@ -1,0 +1,52 @@
+/* style.css */
+body { 
+	background-color: #f4f6f9; 
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+}
+
+.crm-header { 
+	background-color: #0d2e66; 
+	color: white; 
+	padding: 40px 0; 
+	margin-bottom: 30px; 
+	box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+}
+
+.logo-img {
+	max-height: 160px; 
+	width: auto;
+	margin-bottom: 15px;
+	border-radius: 8px; 
+	background-color: white; 
+	padding: 8px; 
+}
+
+.card { 
+	border: none; 
+	border-radius: 12px; 
+	box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+}
+
+.btn-primary { 
+	background-color: #0d2e66; 
+	border-color: #0d2e66; 
+	padding: 12px; 
+	font-size: 1.1rem; 
+	font-weight: 600; 
+}
+
+.btn-primary:hover { background-color: #1a4da1; }
+
+.form-label { font-weight: 600; color: #444; margin-top: 10px; }
+.asterisk { color: #d9534f; }
+
+.footer-text { 
+	font-size: 0.8rem; 
+	color: #999; 
+	text-align: center; 
+	margin-top: 30px; 
+	margin-bottom: 20px;
+}
+
+/* Utilità per nascondere elementi */
+.d-none { display: none !important; }
