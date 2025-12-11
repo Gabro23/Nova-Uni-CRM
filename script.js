@@ -1,15 +1,83 @@
-// script.js
+// script.js - VERSIONE FINALE COLLEGATA AL TUO DATABASE
 
-// --- 1. CONFIGURAZIONE DATABASE ---
-// Incolla qui sotto il codice che ti da Firebase (quello con apiKey...)
+// --- 1. CONFIGURAZIONE FIREBASE ---
 const firebaseConfig = {
-	// ... INCOLLA QUI LA TUA CONFIGURAZIONE ...
+  apiKey: "AIzaSyBGLgVz0HRkwYNLGfjbFKahitLZgi4xs5A",
+  authDomain: "crm---nova-uni.firebaseapp.com",
+  projectId: "crm---nova-uni",
+  storageBucket: "crm---nova-uni.firebasestorage.app",
+  messagingSenderId: "486298746752",
+  appId: "1:486298746752:web:bea5f8f2934ddef6bdcb65",
+  measurementId: "G-SRCYJ07HGN"
 };
 
-// Se non abbiamo ancora la config, il codice si ferma qui per non dare errori
-// Appena me la dai, attiviamo tutto il resto!
+// Inizializza Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-// --- 2. LOGICA DEI CORSI ---
+// --- 2. GESTIONE LOGIN (Whitelisting) ---
+
+// All'avvio, controlla se l'utente è già loggato
+document.addEventListener("DOMContentLoaded", () => {
+	const operatore = localStorage.getItem("novaUser");
+	
+	if (operatore) {
+		// Se c'è già un utente salvato, mostra direttamente il CRM
+		mostraCRM(operatore);
+	} else {
+		// Altrimenti mostra la schermata di login
+		document.getElementById("loginSection").classList.remove("d-none");
+	}
+});
+
+// Funzione di Login
+function effettuaLogin() {
+	const emailInput = document.getElementById("loginEmail").value.trim().toLowerCase();
+	const btnLogin = document.getElementById("btnLogin");
+
+	if (!emailInput) return alert("Inserisci una email.");
+
+	// Effetto "caricamento"
+	btnLogin.innerText = "Verifica in corso...";
+	btnLogin.disabled = true;
+
+	// CHIEDI AL DATABASE: Esiste questa mail nella cartella 'utenti_ammessi'?
+	db.collection("utenti_ammessi").where("email", "==", emailInput).get()
+	.then((querySnapshot) => {
+		if (!querySnapshot.empty) {
+			// TROVATO! Accesso consentito
+			localStorage.setItem("novaUser", emailInput); // Salva nel browser
+			mostraCRM(emailInput);
+		} else {
+			// NON TROVATO
+			alert("Accesso Negato: Email non autorizzata.");
+			btnLogin.innerText = "Entra";
+			btnLogin.disabled = false;
+		}
+	})
+	.catch((error) => {
+		console.error("Errore login:", error);
+		alert("Errore di connessione. Riprova.");
+		btnLogin.innerText = "Entra";
+		btnLogin.disabled = false;
+	});
+}
+
+// Funzione per mostrare la schermata CRM
+function mostraCRM(email) {
+	document.getElementById("loginSection").classList.add("d-none"); // Nasconde login
+	document.getElementById("crmSection").classList.remove("d-none"); // Mostra CRM
+	console.log("Loggato come:", email);
+}
+
+// Funzione Logout 
+function logout() {
+	localStorage.removeItem("novaUser");
+	location.reload();
+}
+
+
+// --- 3. LOGICA UNIVERSITÀ E CORSI ---
 const databaseCorsi = {
 	"Pegaso": [
 		"L-5 Filosofia ed Etica", "L-7 Ingegneria Civile", "L-10 Lettere, Arti e Umanesimo", 
@@ -60,8 +128,45 @@ function aggiornaCorsi() {
 	}
 }
 
-// Per ora lasciamo l'alert finché non colleghiamo Firebase
+
+// --- 4. SALVATAGGIO DATI (INVIO AL CRM) ---
 document.getElementById("leadForm").addEventListener("submit", function(e) {
 	e.preventDefault();
-	alert("Frontend OK! Manca solo la configurazione Firebase nel file script.js");
+	
+	const btnSubmit = document.querySelector("button[type='submit']");
+	const operatore = localStorage.getItem("novaUser"); // Chi sta inserendo il dato
+
+	// Raccoglie i dati dal form
+	const nuovoStudente = {
+		nome: document.getElementById("nome").value,
+		cognome: document.getElementById("cognome").value,
+		telefono: document.getElementById("telefono").value,
+		email_studente: document.getElementById("email").value,
+		universita: document.getElementById("universita").value,
+		corso: document.getElementById("corso").value,
+		
+		// Dati automatici
+		inserito_da: operatore,
+		data_inserimento: new Date(), // Data e ora attuali
+		stato: "Nuovo" // Stato iniziale
+	};
+
+	// Effetto "caricamento"
+	btnSubmit.innerText = "Salvataggio in corso...";
+	btnSubmit.disabled = true;
+
+	// SPEDISCE A FIREBASE (Nella raccolta "studenti")
+	db.collection("studenti").add(nuovoStudente)
+	.then(() => {
+		alert("Studente inserito correttamente nel CRM!");
+		document.getElementById("leadForm").reset(); // Pulisce il modulo
+		btnSubmit.innerText = "Inserisci nel CRM";
+		btnSubmit.disabled = false;
+	})
+	.catch((error) => {
+		console.error("Errore salvataggio:", error);
+		alert("C'è stato un problema nel salvataggio. Controlla la connessione.");
+		btnSubmit.innerText = "Inserisci nel CRM";
+		btnSubmit.disabled = false;
+	});
 });
