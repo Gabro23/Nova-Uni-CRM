@@ -32,8 +32,6 @@ function effettuaLogin() {
 	
 	if (!emailInput) return alert("Inserisci una email.");
 
-	// Simuliamo che il login sia andato a buon fine
-	alert("Login di Test effettuato con: " + emailInput);
 	
 	localStorage.setItem("novaUser", emailInput);
 	mostraCRM(emailInput);
