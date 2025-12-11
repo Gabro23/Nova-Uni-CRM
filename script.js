@@ -1,4 +1,4 @@
-// script.js - VERSIONE DEFINITIVA (LOGIN SILENZIOSO + EMAIL CORRETTA)
+// script.js - VERSIONE PRODUZIONE (FIREBASE AUTH REALE + EMAILJS)
 
 // --- 1. CONFIGURAZIONE FIREBASE ---
 const firebaseConfig = {
@@ -14,40 +14,52 @@ const firebaseConfig = {
 // Inizializza Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth(); // Aggiunto il servizio Auth
 
+// --- 2. GESTIONE LOGIN (REALE CON EMAIL E PASSWORD) ---
 
-// --- 2. GESTIONE LOGIN ---
-
-document.addEventListener("DOMContentLoaded", () => {
-	const operatore = localStorage.getItem("novaUser");
-	if (operatore) {
-		mostraCRM(operatore);
+// Questo "ascoltatore" controlla SEMPRE se c'è un utente loggato
+// Appena apri la pagina, Firebase controlla se eri già dentro.
+auth.onAuthStateChanged((user) => {
+	if (user) {
+		// Utente loggato: nascondi login, mostra CRM
+		mostraCRM(user.email);
 	} else {
+		// Nessun utente: mostra form login
 		document.getElementById("loginSection").classList.remove("d-none");
+		document.getElementById("crmSection").classList.add("d-none");
 	}
 });
 
 function effettuaLogin() {
-	const emailInput = document.getElementById("loginEmail").value.trim().toLowerCase();
+	const emailInput = document.getElementById("loginEmail").value.trim();
+	const passInput = document.getElementById("loginPassword").value.trim(); // Ora serve la password
 	
-	if (!emailInput) return alert("Inserisci una email per entrare.");
+	if (!emailInput || !passInput) return alert("Inserisci email e password.");
 
-	// Salva l'utente
-	localStorage.setItem("novaUser", emailInput);
-	
-	// NIENTE PIÙ ALERT QUI. Entra diretto.
-	mostraCRM(emailInput);
+	// Login vero su Firebase
+	auth.signInWithEmailAndPassword(emailInput, passInput)
+		.then((userCredential) => {
+			// Login riuscito! onAuthStateChanged gestirà la visualizzazione
+			console.log("Login effettuato:", userCredential.user.email);
+		})
+		.catch((error) => {
+			console.error("Errore login:", error);
+			alert("Errore di accesso: " + error.message);
+		});
 }
 
 function mostraCRM(email) {
 	document.getElementById("loginSection").classList.add("d-none");
 	document.getElementById("crmSection").classList.remove("d-none");
-	console.log("Loggato come:", email);
+	console.log("Benvenuto nel CRM:", email);
 }
 
 function logout() {
-	localStorage.removeItem("novaUser");
-	location.reload();
+	auth.signOut().then(() => {
+		console.log("Logout effettuato");
+		location.reload(); // Ricarica la pagina per pulire tutto
+	});
 }
 
 
@@ -107,10 +119,18 @@ function aggiornaCorsi() {
 document.getElementById("leadForm").addEventListener("submit", function(e) {
 	e.preventDefault();
 	
-	const btnSubmit = document.querySelector("button[type='submit']");
-	const operatore = localStorage.getItem("novaUser"); 
+	// Controlliamo se l'utente è loggato davvero
+	const user = auth.currentUser;
+	if (!user) {
+		alert("Sessione scaduta. Rifai il login.");
+		location.reload();
+		return;
+	}
 
-	// Dati per Firebase (qui usiamo i nomi "standard" del database)
+	const btnSubmit = document.querySelector("button[type='submit']");
+	const operatoreEmail = user.email; // Prendiamo la mail vera da Firebase Auth
+
+	// Dati per Firebase
 	const nuovoStudente = {
 		nome: document.getElementById("nome").value,
 		cognome: document.getElementById("cognome").value,
@@ -118,7 +138,7 @@ document.getElementById("leadForm").addEventListener("submit", function(e) {
 		email_studente: document.getElementById("email").value,
 		universita: document.getElementById("universita").value,
 		corso: document.getElementById("corso").value,
-		inserito_da: operatore,
+		inserito_da: operatoreEmail,
 		data_inserimento: new Date(), 
 		stato: "Nuovo"
 	};
@@ -131,12 +151,11 @@ document.getElementById("leadForm").addEventListener("submit", function(e) {
 	.then(() => {
 		console.log("Dati salvati su Firebase");
 		
-		// B. INVIA LA NOTIFICA EMAIL (CORRETTO PER IL TUO TEMPLATE)
-		// Le chiavi a sinistra (nome_studente, ecc) DEVONO essere identiche a quelle su EmailJS
+		// B. INVIA LA NOTIFICA EMAIL (CORRETTO)
 		const parametriEmail = {
-			nome_studente: nuovoStudente.nome + " " + nuovoStudente.cognome, // Unisco nome e cognome
+			nome_studente: nuovoStudente.nome + " " + nuovoStudente.cognome, 
 			telefono_studente: nuovoStudente.telefono,
-			orientatore: operatore
+			orientatore: operatoreEmail
 		};
 
 		emailjs.send("service_pww5yfx", "template_anemtvg", parametriEmail)
@@ -146,17 +165,15 @@ document.getElementById("leadForm").addEventListener("submit", function(e) {
 				console.log('Errore invio email:', error);
 			});
 
-		// Messaggio finale all'utente
-		alert("Studente inserito correttamente nel CRM! Email di notifica inviata.");
-		
-		// Pulisce il form
+		// Messaggio finale e reset
+		alert("Studente inserito e notifica inviata!");
 		document.getElementById("leadForm").reset(); 
 		btnSubmit.innerText = "Inserisci nel CRM";
 		btnSubmit.disabled = false;
 	})
 	.catch((error) => {
 		console.error("Errore salvataggio:", error);
-		alert("C'è stato un problema nel salvataggio su Firebase.");
+		alert("Errore salvataggio: " + error.message);
 		btnSubmit.innerText = "Inserisci nel CRM";
 		btnSubmit.disabled = false;
 	});
